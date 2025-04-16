@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>央行学闯关测试</title>
+    <style>
+        body {
+            background: url('https://pic.rmb.bdstatic.com/bjh/3f185fccf0/250101/c6b7411b85c8e8558ce4b6249a45036a.jpeg') center/cover fixed;
+            font-family: 'Microsoft YaHei', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #startBtn {
+            padding: 20px 40px;
+            font-size: 32px;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 200px;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(76,175,80,0.5);
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 800px;
+            margin-top: 50px;
+            display: none;
+            position: relative;
+        }
+
+        .question {
+            font-size: 28px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #FFD700;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 22px;
+        }
+
+        .option:hover {
+            background: rgba(76, 175, 80, 0.3);
+            transform: scale(1.02);
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: #FF5722;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #2196F3;
+        }
+
+        .result-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .rank-king {
+            color: #FFD700;
+            text-shadow: 0 0 10px #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <button id="startBtn">开始挑战</button>
+    <div class="container">
+        <div class="timer">时间：<span id="time">00:00</span></div>
+        <div class="score">得分：<span id="score">0</span></div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+    </div>
+    <div class="result-popup" id="resultPopup"></div>
+
+    <audio id="correctSound" src="https://actions.google.com/sounds/v1/games/positive_confirm.ogg"></audio>
+    <audio id="wrongSound" src="https://actions.google.com/sounds/v1/games/casino_slot_machine_loss.ogg"></audio>
+    <audio id="victorySound" src="https://actions.google.com/sounds/v1/games/arcade_achievement.ogg"></audio>
+
+    <script>
+        const questions = [
+            {
+                question: "1、下列哪项不属于中央银行的一般性货币政策工具？",
+                options: ["公开市场操作再贴现政策", "窗口指导", "存款准备金率", "再贴现政策"],
+                answer: 1
+            },
+            {
+                question: "2、中央银行通过买卖政府债券来调节货币供应量的操作称为：",
+                options: ["再贴现操作","存款准备金操作", "利率操作", "公开市场操作"],
+                answer: 3
+            },
+ {
+                question: "3、下当中央银行提高存款准备金率时，通常会导致：",
+                options: ["货币供应量增加", "货币供应量减少", "商业银行超额准备金增加", "市场利率下降"],
+                answer: 1
+            },
+ {
+                question: "4、再贴现政策是指中央银行通过调整什么来影响商业银行的信贷行为？",
+                options: ["商业银行存款利率",  "商业银行贷款利率","商业银行持有票据向中央银行借款的利率", "中央银行持有票据向商业银行借款的利率"],
+                answer: 2
+            },
+ {
+                question: "5、下列哪种货币政策工具的效果最为强烈和普遍？",
+                options: ["存款准备金率", "公开市场操作", "再贴现政策", "窗口指导"],
+                answer: 0
+            },
+ {
+                question: "6、中央银行在公开市场上买入政府债券会导致：",
+                options: ["货币供应量减少", "货币供应量增加", "市场利率上升", "商业银行准备金减少"],
+                answer: 1
+            },
+ {
+                question: "7、下列哪项是存款准备金政策的主要缺点？",
+                options: ["操作过于频繁", "效果不明显", "对金融体系冲击过大", "难以量化效果"],
+                answer: 2
+            },
+ {
+                question: "8、中央银行通过再贴现政策影响经济的传导机制是：",
+                options: ["直接影响市场利率", "直接影响货币供应量", "影响商业银行借款成本，进而影响信贷规模", "直接影响政府财政收支"],
+                answer: 2
+            },
+ {
+                question: "9、在经济过热时，中央银行最可能采取的政策组合是：",
+                options: ["降低存款准备金率，买入政府债券", "降低再贴现率，卖出政府债券", "提高存款准备金率，卖出政府债券", "提高再贴现率，买入政府债券"],
+                answer: 2
+            },
+ {
+                question: "10、中央银行在金融危机期间最可能采取的措施是什么：",
+                options: ["提高存款准备金率", "降低再贴现率", "减少货币供应量", "提高利率"],
+                answer: 1
+            },
+            // 其他8道题...
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let timer;
+        let startTime;
+
+        // 初始化事件
+        document.getElementById('startBtn').addEventListener('click', () => {
+            document.getElementById('startBtn').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            startTimer();
+            showQuestion();
+        });
+
+        // 计时器功能
+        function startTimer() {
+            startTime = Date.now();
+            timer = setInterval(() => {
+                const seconds = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('time').textContent = 
+                    `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
+            }, 1000);
+        }
+
+        // 显示题目
+        function showQuestion() {
+            if(currentQuestion >= questions.length) return showResult();
+            
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = q.options.map((opt, index) => `
+                <div class="option" onclick="checkAnswer(${index})">
+                    ${String.fromCharCode(65 + index)}. ${opt}
+                </div>
+            `).join('');
+        }
+
+        // 检查答案
+        function checkAnswer(selected) {
+            const correct = questions[currentQuestion].answer;
+            const options = document.querySelectorAll('.option');
+            
+            // 高亮正确答案
+            options[correct].style.background = 'rgba(76, 175, 80, 0.5)';
+            options[correct].style.borderColor = '#4CAF50';
+            
+            // 处理回答结果
+            if(selected === correct) {
+                score += 10;
+                document.getElementById('score').textContent = score;
+                document.getElementById('correctSound').play();
+            } else {
+                options[selected].style.background = 'rgba(244, 67, 54, 0.5)';
+                options[selected].style.borderColor = '#F44336';
+                document.getElementById('wrongSound').play();
+            }
+            
+            currentQuestion++;
+            setTimeout(showQuestion, 1500);
+        }
+
+        // 显示最终结果
+        function showResult() {
+            clearInterval(timer);
+            document.querySelector('.container').style.display = 'none';
+            
+            const popup = document.getElementById('resultPopup');
+            popup.style.display = 'block';
+            
+            let rank = '';
+            if(score >= 90) {
+                rank = '王者';
+                popup.innerHTML = `<h2 class="rank-king">🏆 ${rank}</h2>
+                                  <p>央行学大师！</p>`;
+            } else if(score >= 70) {
+                // 其他等级判断...
+            }
+            
+            document.getElementById('victorySound').play();
+        }
+    </script>
+</body>
+</html>
